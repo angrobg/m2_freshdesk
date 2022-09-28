@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="morfdev" translate="label" sortOrder="340">
+            <label>MorfDev</label>
+        </tab>
+        <section id="morfdev_freshdesk" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                 showInStore="1">
+            <label>Freshdesk</label>
+            <tab>morfdev</tab>
+            <resource>Morfdev_Freshdesk::morfdev_freshdesk</resource>
+            <group id="general" translate="label,comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Application settings</label>
+                <field id="token" translate="label" type="text" sortOrder="10" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <label>API Token</label>
+                </field>
+                <field id="generate_token" type="button" sortOrder="20" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <frontend_model>Morfdev\Freshdesk\Block\Adminhtml\System\Config\Field\GenerateButton</frontend_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
