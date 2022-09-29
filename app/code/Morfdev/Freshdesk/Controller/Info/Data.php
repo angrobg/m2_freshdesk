@@ -39,6 +39,8 @@ class Data extends Action
     /** @var StoreManagerInterface  */
     protected $storeManager;
 
+    protected $customerNotFound = true;
+
     /**
      * Data constructor.
      * @param Context $context
@@ -123,6 +125,14 @@ class Data extends Action
             $data = array_merge(
                 $this->getCustomerInfo($scope), $this->getRecentOrderInfo($scope)
             );
+            //customer data not found, but found some orders
+            $customerInfo = null;
+            if ($this->customerNotFound && isset($data['order_list']) && count($data['order_list'])) {
+                $customerInfo = $this->customerManagement->getInfoFromOrder($data['order_list'][0]['increment_id'], $scope);
+            }
+            if ($customerInfo) {
+                $data['customer_list'] = $customerInfo;
+            }
         } catch (\Exception $e) {
             $resultJson->setHttpResponseCode(500);
             return $resultJson->setData([
@@ -146,7 +156,7 @@ class Data extends Action
      */
     private function getCustomerInfo($scope)
     {
-        $result = [];
+        $result = ['customer_list' => []];
         $postData = $this->getPostData();
         if (null === $postData) {
             return $result;
@@ -159,6 +169,7 @@ class Data extends Action
             $customerInfo = $this->customerManagement->getInfo($postData['email'], $scope);
         }
         if ($customerInfo) {
+            $this->customerNotFound = false;
             $result = ['customer_list' => $customerInfo];
         }
         return $result;
@@ -170,7 +181,7 @@ class Data extends Action
      */
     private function getRecentOrderInfo($scope)
     {
-        $result = [];
+        $result = ['order_list' => []];
         $postData = $this->getPostData();
         if (null === $postData) {
             return $result;
