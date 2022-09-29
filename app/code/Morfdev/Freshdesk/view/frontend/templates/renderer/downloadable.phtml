@@ -6,7 +6,7 @@
     <div class="u-epsilon item-options links">
         <?php foreach ($options as $option) : ?>
             <div>
-                <span class="row-label"><?php echo trim($block->escapeHtml($option['label'])) ?>:</span>
+                <span class="row-label mr-5"><?php echo trim($block->escapeHtml($option['label'])) ?>:</span>
                 <?php if (!$block->getPrintStatus()): ?>
                     <?php $formatedOptionValue = $block->getFormatedOptionValue($option) ?>
                     <span class="row-value" <?php if (isset($formatedOptionValue['full_view'])): ?> class="tooltip wrapper"<?php endif; ?>>
