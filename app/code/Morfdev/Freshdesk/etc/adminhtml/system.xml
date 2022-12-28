@@ -7,7 +7,7 @@ xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file
         </tab>
         <section id="morfdev_freshdesk" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                  showInStore="1">
-            <label>Freshdesk</label>
+            <label>Freshworks</label>
             <tab>morfdev</tab>
             <resource>Morfdev_Freshdesk::morfdev_freshdesk</resource>
             <group id="general" translate="label,comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
