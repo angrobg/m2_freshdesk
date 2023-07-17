@@ -21,6 +21,17 @@ xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file
                        showInWebsite="0" showInStore="0">
                     <frontend_model>Morfdev\Freshdesk\Block\Adminhtml\System\Config\Field\GenerateButton</frontend_model>
                 </field>
+
+                <field id="freshsales_destination_url" translate="label" type="label" sortOrder="30" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <label>Freshsales Destination URL</label>
+                    <comment>Generated on Magento 2 Connector app settings on install. Need for webhook features. Webhooks don't work if empty</comment>
+                </field>
+                <field id="freshdesk_destination_url" translate="label" type="label" sortOrder="40" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <label>Freshdesk Destination URL</label>
+                    <comment>Generated on Magento 2 Connector app settings on install. Need for webhook features. Webhooks don't work if empty</comment>
+                </field>
             </group>
         </section>
     </system>

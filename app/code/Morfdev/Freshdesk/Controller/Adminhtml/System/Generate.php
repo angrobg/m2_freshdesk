@@ -36,7 +36,7 @@ class Generate extends Action
                 'section' => $section,
                 'website' => $website,
                 'store' => $store,
-                'groups' => ['general' => ['fields' => ['token' => ['value' => md5(time())]]]],
+                'groups' => ['general' => ['fields' => ['token' => ['value' => hash('sha256',time())]]]],
             ];
             /** @var \Magento\Config\Model\Config $configModel  */
             $configModel = $this->configFactory->create(['data' => $configData]);
