@@ -27,6 +27,7 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderAddressRepositoryInterface;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 use Magento\Customer\Model\ResourceModel\Customer\CollectionFactory as CustomerCollectionFactory;
+use Magento\Directory\Model\CountryFactory;
 
 
 class OrderRecent implements OrderRecentManagementInterface
@@ -82,23 +83,29 @@ class OrderRecent implements OrderRecentManagementInterface
     /** @var CustomerCollectionFactory  */
     protected $customerCollectionFactory;
 
-    /**
-     * @param OrderRepositoryInterface $orderRepository
-     * @param OrderItemRepositoryInterface $orderItemRepository
-     * @param CurrencyInterface $currency
-     * @param AddressRenderer $addressRenderer
-     * @param StoreManagerInterface $storeManager
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
-     * @param UrlInterface $urlBuilder
-     * @param CustomerRepositoryInterface $customerRepository
-     * @param FilterBuilder $filterBuilder
-     * @param TimezoneInterface $localeDate
-     * @param SortOrderBuilder $sortOrderBuilder
-     * @param RendererType $rendererType
-     * @param ShipmentRepositoryInterface $shipmentRepository
-     * @param ScopeConfigInterface $scopeConfig
-     * @param OrderAddressRepositoryInterface $addressRepository
-     */
+	/** @var CountryFactory  */
+	protected $countryFactory;
+
+	/**
+	 * @param OrderRepositoryInterface $orderRepository
+	 * @param OrderItemRepositoryInterface $orderItemRepository
+	 * @param OrderCollectionFactory $orderCollectionFactory
+	 * @param CurrencyInterface $currency
+	 * @param AddressRenderer $addressRenderer
+	 * @param StoreManagerInterface $storeManager
+	 * @param SearchCriteriaBuilder $searchCriteriaBuilder
+	 * @param UrlInterface $urlBuilder
+	 * @param CustomerRepositoryInterface $customerRepository
+	 * @param FilterBuilder $filterBuilder
+	 * @param TimezoneInterface $localeDate
+	 * @param SortOrderBuilder $sortOrderBuilder
+	 * @param RendererType $rendererType
+	 * @param ShipmentRepositoryInterface $shipmentRepository
+	 * @param ScopeConfigInterface $scopeConfig
+	 * @param OrderAddressRepositoryInterface $addressRepository
+	 * @param CustomerCollectionFactory $customerCollectionFactory
+	 * @param CountryFactory $countryFactory
+	 */
     public function __construct(
         OrderRepositoryInterface $orderRepository,
         OrderItemRepositoryInterface $orderItemRepository,
@@ -116,7 +123,8 @@ class OrderRecent implements OrderRecentManagementInterface
         ShipmentRepositoryInterface $shipmentRepository,
         ScopeConfigInterface $scopeConfig,
         OrderAddressRepositoryInterface $addressRepository,
-        CustomerCollectionFactory $customerCollectionFactory
+        CustomerCollectionFactory $customerCollectionFactory,
+		CountryFactory $countryFactory
     ) {
         $this->orderRepository = $orderRepository;
         $this->orderItemRepository = $orderItemRepository;
@@ -135,6 +143,7 @@ class OrderRecent implements OrderRecentManagementInterface
         $this->addressRepository = $addressRepository;
         $this->orderCollectionFactory = $orderCollectionFactory;
         $this->customerCollectionFactory = $customerCollectionFactory;
+		$this->countryFactory = $countryFactory;
     }
 
     /**
@@ -265,6 +274,62 @@ class OrderRecent implements OrderRecentManagementInterface
                     'row_total' => $currency->toCurrency($orderItem->getBaseRowTotal())
                 ];
             }
+
+			$billing = [
+				'first_name' => '',
+				'last_name' => '',
+				'email' => '',
+				'country' => '',
+				'city' => '',
+				'state' => '',
+				'street' => '',
+				'postcode' => '',
+				'phone' => '',
+			];
+			$shipping = [
+				'first_name' => '',
+				'last_name' => '',
+				'country' => '',
+				'city' => '',
+				'state' => '',
+				'street' => '',
+				'postcode' => '',
+				'phone' => '',
+			];
+			if ($billingAddress) {
+				$country = $this->countryFactory->create();
+				$country->getResource()->load($country, $billingAddress->getCountryId());
+				$countryName = $country->getName();
+
+				$billing = [
+					'first_name' => $billingAddress->getFirstname(),
+					'last_name' => $billingAddress->getLastname(),
+					'email' => $billingAddress->getEmail(),
+					'country' => $countryName,
+					'city' => $billingAddress->getCity(),
+					'state' => $billingAddress->getRegion(),
+					'street' => (is_array($billingAddress->getStreet()))? implode(', ', $billingAddress->getStreet()):'',
+					'postcode' => $billingAddress->getPostcode(),
+					'phone' => $billingAddress->getTelephone(),
+				];
+			}
+
+			if ($shippingAddress) {
+				$country = $this->countryFactory->create();
+				$country->getResource()->load($country, $shippingAddress->getCountryId());
+				$countryName = $country->getName();
+
+				$shipping = [
+					'first_name' => $shippingAddress->getFirstname(),
+					'last_name' => $shippingAddress->getLastname(),
+					'country' => $countryName,
+					'city' => $shippingAddress->getCity(),
+					'state' => $shippingAddress->getRegion(),
+					'street' => (is_array($shippingAddress->getStreet()))? implode(', ', $shippingAddress->getStreet()):'',
+					'postcode' => $shippingAddress->getPostcode(),
+					'phone' => $shippingAddress->getTelephone(),
+				];
+			}
             $orderInfo[] = [
                 'url' => $this->urlBuilder->getUrl('md_freshdesk/index/redirect',
                     ['id' => $order->getEntityId(), 'type' => RedirectType::ORDER_TYPE]),
@@ -275,6 +340,8 @@ class OrderRecent implements OrderRecentManagementInterface
                     \IntlDateFormatter::SHORT),
                 'billing_address' => (null !== $billingAddress)?$this->addressRenderer->format($billingAddress, null):[],
                 'shipping_address' => (null !== $shippingAddress)?$this->addressRenderer->format($shippingAddress, null):[],
+				'billing' => $billing,
+				'shipping' => $shipping,
                 'payment_method' => $order->getPayment()->getMethodInstance()->getTitle(),
                 'shipping_method' => $order->getShippingDescription(),
                 'shipping_tracking' => $this->prepareShippingTrackingForOrder($order),
