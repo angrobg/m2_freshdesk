@@ -21,7 +21,11 @@ xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file
                        showInWebsite="0" showInStore="0">
                     <frontend_model>Morfdev\Freshdesk\Block\Adminhtml\System\Config\Field\GenerateButton</frontend_model>
                 </field>
-
+                <field id="currency_type" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Currency Type</label>
+                    <source_model>Morfdev\Freshdesk\Model\Source\CurrencyType</source_model>
+                    <comment>Select to change displayed currency on Freshworks side. By default used Base Currency</comment>
+                </field>
                 <field id="freshsales_destination_url" translate="label" type="label" sortOrder="30" showInDefault="1"
                        showInWebsite="0" showInStore="0">
                     <label>Freshsales Destination URL</label>

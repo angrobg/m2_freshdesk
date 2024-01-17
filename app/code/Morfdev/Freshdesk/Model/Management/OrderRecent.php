@@ -2,6 +2,7 @@
 
 namespace Morfdev\Freshdesk\Model\Management;
 
+use Morfdev\Freshdesk\Model\Config;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Morfdev\Freshdesk\Api\OrderRecentManagementInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -86,6 +87,9 @@ class OrderRecent implements OrderRecentManagementInterface
 	/** @var CountryFactory  */
 	protected $countryFactory;
 
+	/** @var Config  */
+	protected $config;
+
 	/**
 	 * @param OrderRepositoryInterface $orderRepository
 	 * @param OrderItemRepositoryInterface $orderItemRepository
@@ -105,6 +109,7 @@ class OrderRecent implements OrderRecentManagementInterface
 	 * @param OrderAddressRepositoryInterface $addressRepository
 	 * @param CustomerCollectionFactory $customerCollectionFactory
 	 * @param CountryFactory $countryFactory
+	 * @param Config $config
 	 */
     public function __construct(
         OrderRepositoryInterface $orderRepository,
@@ -124,7 +129,8 @@ class OrderRecent implements OrderRecentManagementInterface
         ScopeConfigInterface $scopeConfig,
         OrderAddressRepositoryInterface $addressRepository,
         CustomerCollectionFactory $customerCollectionFactory,
-		CountryFactory $countryFactory
+		CountryFactory $countryFactory,
+		Config $config
     ) {
         $this->orderRepository = $orderRepository;
         $this->orderItemRepository = $orderItemRepository;
@@ -144,6 +150,7 @@ class OrderRecent implements OrderRecentManagementInterface
         $this->orderCollectionFactory = $orderCollectionFactory;
         $this->customerCollectionFactory = $customerCollectionFactory;
 		$this->countryFactory = $countryFactory;
+		$this->config = $config;
     }
 
     /**
@@ -236,6 +243,7 @@ class OrderRecent implements OrderRecentManagementInterface
             ->create();
         $orderList = $this->orderRepository->getList($searchCriteria)->getItems();
         $orderInfo = [];
+        $isBaseCurrencyType = $this->config->getCurrencyType() !== 'store';
         /** @var OrderInterface $order */
         foreach ($orderList as $order) {
             $billingAddress = $order->getBillingAddress();
@@ -250,7 +258,8 @@ class OrderRecent implements OrderRecentManagementInterface
                 ->create();
             $orderItemsList = $this->orderItemRepository->getList($searchCriteria)->getItems();
 
-            $currency = $this->currency->getCurrency($order->getBaseCurrencyCode());
+            $currencyCode = $isBaseCurrencyType ? $order->getBaseCurrencyCode() : $order->getOrderCurrencyCode();
+            $currency = $this->currency->getCurrency($currencyCode);
             $orderItemInfo = [];
             /** @var OrderItemInterface $orderItem */
             foreach ($orderItemsList as $orderItem) {
@@ -266,12 +275,12 @@ class OrderRecent implements OrderRecentManagementInterface
                     'name' => $orderItem->getName(),
                     'product_html' => $renderer->toHtml(),
                     'sku' => $orderItem->getSku(),
-                    'price' => $currency->toCurrency($orderItem->getBasePrice()),
+                    'price' => $isBaseCurrencyType ? $currency->toCurrency($orderItem->getBasePrice()) : $currency->toCurrency($orderItem->getPrice()),
                     'ordered_qty' => (int)$orderItem->getQtyOrdered(),
                     'invoiced_qty' => (int)$orderItem->getQtyInvoiced(),
                     'shipped_qty' => (int)$orderItem->getQtyShipped(),
                     'refunded_qty' => (int)$orderItem->getQtyRefunded(),
-                    'row_total' => $currency->toCurrency($orderItem->getBaseRowTotal())
+                    'row_total' => $isBaseCurrencyType ? $currency->toCurrency($orderItem->getBaseRowTotal()) : $currency->toCurrency($orderItem->getRowTotal())
                 ];
             }
 
@@ -348,11 +357,11 @@ class OrderRecent implements OrderRecentManagementInterface
                 'status' => $order->getStatusLabel(),
                 'state' => $order->getState(),
                 'totals' => [
-                    'subtotal' => $currency->toCurrency($order->getBaseSubtotal()),
-                    'shipping' => $currency->toCurrency($order->getBaseShippingAmount()),
-                    'discount' => $currency->toCurrency($order->getBaseDiscountAmount()),
-                    'tax' => $currency->toCurrency($order->getBaseTaxAmount()),
-                    'grand_total' => $currency->toCurrency($order->getBaseGrandTotal())
+                    'subtotal' => $isBaseCurrencyType ? $currency->toCurrency($order->getBaseSubtotal()) : $currency->toCurrency($order->getSubtotal()),
+                    'shipping' => $isBaseCurrencyType ? $currency->toCurrency($order->getBaseShippingAmount()) : $currency->toCurrency($order->getShippingAmount()),
+                    'discount' => $isBaseCurrencyType ? $currency->toCurrency($order->getBaseDiscountAmount()) : $currency->toCurrency($order->getDiscountAmount()),
+                    'tax' => $isBaseCurrencyType ? $currency->toCurrency($order->getBaseTaxAmount()) : $currency->toCurrency($order->getTaxAmount()),
+                    'grand_total' => $isBaseCurrencyType ? $currency->toCurrency($order->getBaseGrandTotal()) : $currency->toCurrency($order->getGrandTotal())
                 ],
                 'items' => $orderItemInfo
             ];

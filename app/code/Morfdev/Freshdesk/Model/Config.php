@@ -6,6 +6,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 class Config
 {
 	const FRESHWORKS_CONFIG_API_TOKEN_PATH = 'morfdev_freshdesk/general/token';
+	const FRESHWORKS_CONFIG_CURRENCY_TYPE_PATH = 'morfdev_freshdesk/general/currency_type';
 	const FRESHWORKS_CONFIG_FRESHDESK_DESTINATION_URL_PATH = 'morfdev_freshdesk/general/freshdesk_destination_url';
 	const FRESHWORKS_CONFIG_FRESHSALES_DESTINATION_URL_PATH = 'morfdev_freshdesk/general/freshsales_destination_url';
 
@@ -28,6 +29,16 @@ class Config
 	{
 		return $this->scopeConfig->getValue(
 			self::FRESHWORKS_CONFIG_API_TOKEN_PATH
+		);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCurrencyType()
+	{
+		return $this->scopeConfig->getValue(
+			self::FRESHWORKS_CONFIG_CURRENCY_TYPE_PATH
 		);
 	}
 
