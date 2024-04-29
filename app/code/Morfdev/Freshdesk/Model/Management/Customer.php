@@ -155,6 +155,7 @@ class Customer implements CustomerManagementInterface
                 $countryName = $country->getName();
             } catch (\Exception $e) {
                 $countryName = '';
+				$address = null;
             }
             
             //get customer group code
@@ -180,6 +181,31 @@ class Customer implements CustomerManagementInterface
             } catch (\Exception $e) {
                 $shippingAddressFormatted = null;
             }
+
+            $meta = [
+				'firstname' => $customer->getFirstname(),
+				'lastname' => $customer->getLastname(),
+				'country' => $countryName,
+				'work_number' => '',
+				'address' => '',
+				'city' => '',
+				'state' => '',
+				'zipcode' => '',
+				'job_title' => ''
+			];
+
+            if ($address) {
+				$meta['work_number'] = $address->getTelephone() ? $address->getTelephone(): '';
+				$meta['address'] = $address->getStreet()[0] ? $address->getStreet()[0]: '';
+				if (isset($address->getStreet()[1])) {
+					$meta['address'] .= ' ' . $address->getStreet()[1];
+				}
+				$meta['city'] = $address->getCity() ? $address->getCity(): '';
+				$meta['state'] = $address->getRegion() ? $address->getRegion()->getRegion(): '';
+				$meta['zipcode'] = $address->getPostcode() ? $address->getPostcode(): '';
+				$meta['job_title'] = $address->getCompany() ? $address->getCompany(): '';
+			}
+
             $customerInfo[] = [
                 'url' => $this->urlBuilder->getUrl('md_freshdesk/index/redirect',
                     ['id' => $customer->getId(), 'type' => RedirectType::CUSTOMER_TYPE]),
@@ -195,6 +221,7 @@ class Customer implements CustomerManagementInterface
                     \IntlDateFormatter::NONE),
                 'billing_address' => $billingAddressFormatted,
                 'shipping_address' => $shippingAddressFormatted,
+				'meta' => $meta
             ];
         }
         return $customerInfo;

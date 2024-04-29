@@ -42,7 +42,7 @@ class Authorization
         }
         //check is default token
         $storeToken =  $this->systemConfig->getApiTokenForDefault();
-        if($postData['token'] == $storeToken) {
+        if($storeToken && $postData['token'] == $storeToken) {
             $result = Store::DEFAULT_STORE_ID;
             return $result;
         }
